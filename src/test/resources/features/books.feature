@@ -27,3 +27,17 @@ Feature: Book Category
       | Memoir                  |
       | Poetry                  |
 
+
+   @db
+  Scenario: verify book categories with UI
+    Given the user logged in as "librarian"
+    When the user navigates to "Books" page
+    And the user gets all book categories in webpage
+    Then verify book categories must match book categories table from db
+
+
+    Scenario: verify book info with db
+    Given the user logged in as "librarian"
+    When the user navigates to "Books" page
+    When I open book "Agile Testing"
+    Then book information must match the database for "Agile Testing"

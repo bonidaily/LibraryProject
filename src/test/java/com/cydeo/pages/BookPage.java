@@ -18,6 +18,12 @@ public class BookPage extends BasePage {
     @FindBy(id = "book_categories")
     public WebElement mainCategoryElement;
 
+    @FindBy(id = "book_group_id")
+    public WebElement bookCategory;
+
+    @FindBy(css = ".dataTables_info")
+    public WebElement bookCount;
+
     @FindBy(name = "name")
     public WebElement bookName;
 
@@ -35,6 +41,8 @@ public class BookPage extends BasePage {
     @FindBy(id = "description")
     public WebElement description;
 
+    @FindBy(xpath = "//a[.=' Add Book']")
+    public WebElement addBook;
 
 
     public WebElement editBook(String book) {

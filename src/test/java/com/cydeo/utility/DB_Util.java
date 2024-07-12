@@ -86,7 +86,7 @@ public class DB_Util {
     /**
      * This method will reset the cursor to before first location
      */
-    private static void resetCursor(){
+    public static void resetCursor(){
 
         try {
             rs.beforeFirst();

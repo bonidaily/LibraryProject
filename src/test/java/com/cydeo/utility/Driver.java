@@ -1,8 +1,11 @@
 package com.cydeo.utility;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
+
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -12,7 +15,6 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 public class Driver {
-
 
 
     // Creating a private constructor, we are closing access to the
@@ -30,37 +32,43 @@ public class Driver {
 
     // Create a re-usable utility method which will return same driver instance when we call it
     public static WebDriver getDriver() {
-
-        // it will check if driver is null and if it is we will set up browser inside if statement
-        // if you already setup driver and using it again for following line of codes, it will return to same driver
         if (driverPool.get() == null) {
-            String browserName = System.getProperty("browser") != null ? browserName = System.getProperty("browser") : ConfigurationReader.getProperty("browser");
-
-
-
-            switch(browserName){
+            /*
+            We will read our browserType from configuration.properties file.
+            This way, we can control which browser is opened from outside our code.
+             */
+            String browserType="";
+            if (System.getProperty("BROWSER") == null) {
+                browserType = ConfigurationReader.getProperty("browser");
+            } else {
+                browserType = System.getProperty("BROWSER");
+            }
+            System.out.println("Browser: " + browserType);
+            // Initialize WebDriver based on browser type
+            switch (browserType) {
                 case "remote-chrome":
                     try {
                         // assign your grid server address
-                        String gridAddress = "52.90.101.17";
+                        String gridAddress = "54.162.50.13";
                         URL url = new URL("http://"+ gridAddress + ":4444/wd/hub");
-                        DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
-                        desiredCapabilities.setBrowserName("chrome");
-                        driverPool.set(new RemoteWebDriver(url, desiredCapabilities));
+                        ChromeOptions chromeOptions = new ChromeOptions();
+                        chromeOptions.addArguments("--start-maximized");
+                        driverPool.set(new RemoteWebDriver(url, chromeOptions));
                         //driverPool.set(new RemoteWebDriver(new URL("http://0.0.0.0:4444/wd/hub"),desiredCapabilities));
 
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
-                case "remote-firefox":
+                case "remote-edge":
                     try {
                         // assign your grid server address
-                        String gridAddress = "52.90.101.17";
+                        String gridAddress = "54.162.50.13";
                         URL url = new URL("http://"+ gridAddress + ":4444/wd/hub");
-                        DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
-                        desiredCapabilities.setBrowserName("firefox");
-                        driverPool.set(new RemoteWebDriver(url, desiredCapabilities));
+                        EdgeOptions edgeOptions = new EdgeOptions();
+                        //FirefoxOptions firefoxOptions=new FirefoxOptions();
+                        edgeOptions.addArguments("--start-maximized");
+                        driverPool.set(new RemoteWebDriver(url, edgeOptions));
                         //driverPool.set(new RemoteWebDriver(new URL("http://0.0.0.0:4444/wd/hub"),desiredCapabilities));
 
                     } catch (Exception e) {
@@ -68,28 +76,34 @@ public class Driver {
                     }
                     break;
                 case "chrome":
-                    WebDriverManager.chromedriver().setup();
                     driverPool.set(new ChromeDriver());
-                    driverPool.get().manage().window().maximize();
-                    driverPool.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
                     break;
                 case "firefox":
-                    WebDriverManager.firefoxdriver().setup();
                     driverPool.set(new FirefoxDriver());
-                    driverPool.get().manage().window().maximize();
-                    driverPool.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
                     break;
+                case "edge":
+                    driverPool.set(new EdgeDriver());
+                    break;
+                case "headless-chrome":
+                    ChromeOptions options = new ChromeOptions();
+                    options.addArguments("--headless=new");
+                    driverPool.set(new ChromeDriver(options));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid browser type specified in the configuration: " + browserType);
             }
 
+            // Maximize the browser window and set implicit wait
+            driverPool.get().manage().window().maximize();
+            driverPool.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         }
 
         return driverPool.get();
-
     }
 
     // This method will make sure our driver value is always null after using quit() method
-    public static void closeDriver(){
-        if(driverPool.get() != null){
+    public static void closeDriver() {
+        if (driverPool.get() != null) {
             driverPool.get().quit(); // this line will terminate the existing driver session. with using this driver will not be even null
             driverPool.remove();  //driver = null
         }
