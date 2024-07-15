@@ -14,7 +14,7 @@ Feature: As a librarian, I want to create a new book using add_book endpoint so 
     And "book_id" field should not be null
 
 
-  @db @ui
+  @db @ui @smoke
   Scenario: Create a new book ALL LAYERS
     Given I logged Library api as a "librarian"
     And Accept header is "application/json"
